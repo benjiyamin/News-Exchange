@@ -1,0 +1,4 @@
+.card.selected {
+    border-width: 3px;
+    border-color: #007bff
+}
