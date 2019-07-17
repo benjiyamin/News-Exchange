@@ -19,8 +19,10 @@ app.engine('handlebars', handlebars({
 }))
 app.set('view engine', 'handlebars')
 
+// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+var MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost/exchange_db'
 // Connect to the Mongo DB
-mongoose.connect('mongodb://localhost/exchange_db', { useNewUrlParser: true })
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
 
 // Routes
 require('./routes/api_routes')(app)
