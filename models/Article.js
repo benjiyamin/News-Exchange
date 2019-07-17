@@ -11,12 +11,17 @@ const ArticleSchema = new Schema({
     required: true,
     unique: true
   },
+  summary: {
+    type: String,
+    required: true
+  },
   image: String,
-  timestamp: Date,
-  comment: {
+  topic: String,
+  datetime: Date,
+  comments: [{
     type: Schema.Types.ObjectId,
     ref: 'Comment'
-  }
+  }]
 })
 
 module.exports = mongoose.model('Article', ArticleSchema)

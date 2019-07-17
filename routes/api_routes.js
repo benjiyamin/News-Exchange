@@ -4,21 +4,32 @@ const cheerio = require('cheerio')
 var db = require('../models')
 
 module.exports = function (app) {
-  app.get('/scrape', function (req, res) {
-    axios.get('https://old.reddit.com/')
+  app.get('/api/scrape', function (req, res) {
+    axios.get('https://www.npr.org/sections/news/')
       .then(response => {
         const $ = cheerio.load(response.data)
         const results = []
-        $('.thing').each((i, element) => {
+        $('article.item').each((i, element) => {
           const result = {}
           result.title = $(element)
-            .find('a.title')
+            .find('.title')
             .text()
-          result.link = $(element).data('url')
+          result.link = $(element)
+            .find('.title > a')
+            // .first()
+            .attr('href')
+          result.summary = $(element)
+            .find('.teaser')
+            .text()
           result.image = $(element)
             .find('img')
             .attr('src')
-          result.timestamp = $(element).data('timestamp')
+          result.topic = $(element)
+            .find('.slug')
+            .text()
+          result.datetime = $(element)
+            .find('time')
+            .attr('datetime')
           results.push(result)
           db.Article.create(result)
             .then(dbArticle => console.log(dbArticle))
@@ -32,7 +43,7 @@ module.exports = function (app) {
       })
   })
 
-  app.get('/clear', function (req, res) {
+  app.get('/api/clear', function (req, res) {
     db.Article.deleteMany({})
       .then(() => res.status(200).end())
       .catch(error => {
@@ -41,18 +52,29 @@ module.exports = function (app) {
       })
   })
 
-  app.post('/articles/:id', function (req, res) {
+  app.post('/api/articles/:id', function (req, res) {
     db.Comment.create(req.body)
       .then(dbComment => {
         return db.Article.findOneAndUpdate({
           _id: req.params.id
         }, {
-          comment: dbComment._id
+          $push: { comments: dbComment._id }
         }, {
           new: true
         })
       })
+      .then(dbArticle => { return dbArticle.populate('comments').execPopulate() })
       .then(dbArticle => res.json(dbArticle))
+      .catch(error => {
+        res.status(500).end() // Internal Server Error
+        throw error
+      })
+  })
+
+  app.get('/api/articles', function (req, res) {
+    db.Article.find({})
+      .populate('comments')
+      .then(dbArticles => res.json(dbArticles))
       .catch(error => {
         res.status(500).end() // Internal Server Error
         throw error
