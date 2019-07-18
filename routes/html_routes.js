@@ -1,7 +1,7 @@
 const url = require('url')
 const request = require('request')
 
-const db = require('../models')
+// const db = require('../models')
 
 module.exports = function (app) {
   app.get('/', (req, res) => {
@@ -13,12 +13,16 @@ module.exports = function (app) {
         res.status(500).end() // Internal Server Error
         throw error
       } else {
+        res.render('index', {})
+        /*
         db.Article.find({})
+          .sort({ datetime: -1 })
           .then(dbArticles => res.render('index', { articles: dbArticles }))
           .catch(error => {
             res.status(500).end() // Internal Server Error
             throw error
           })
+        */
       }
     })
   })

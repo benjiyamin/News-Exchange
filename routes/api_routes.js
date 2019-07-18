@@ -1,7 +1,8 @@
 const axios = require('axios')
 const cheerio = require('cheerio')
+const mongojs = require('mongojs')
 
-var db = require('../models')
+const db = require('../models')
 
 module.exports = function (app) {
   app.get('/api/scrape', function (req, res) {
@@ -71,10 +72,47 @@ module.exports = function (app) {
       })
   })
 
+  app.get('/api/articles/:id', function (req, res) {
+    db.Article.find({ _id: req.params.id })
+      .then(dbArticle => { return dbArticle.populate('comments').execPopulate() })
+      .then(dbArticle => res.json(dbArticle))
+      .catch(error => {
+        res.status(500).end() // Internal Server Error
+        throw error
+      })
+  })
+
   app.get('/api/articles', function (req, res) {
     db.Article.find({})
       .populate('comments')
+      .sort({
+        datetime: -1,
+        _id: -1
+      })
       .then(dbArticles => res.json(dbArticles))
+      .catch(error => {
+        res.status(500).end() // Internal Server Error
+        throw error
+      })
+  })
+
+  app.get('/api/articles', function (req, res) {
+    db.Article.find({})
+      .populate('comments')
+      .sort({
+        datetime: -1,
+        _id: -1
+      })
+      .then(dbArticles => res.json(dbArticles))
+      .catch(error => {
+        res.status(500).end() // Internal Server Error
+        throw error
+      })
+  })
+
+  app.delete('/api/comments/:id', function (req, res) {
+    db.Comment.remove({ _id: mongojs.ObjectID(req.params.id) })
+      .then(dbRemoved => res.json(dbRemoved))
       .catch(error => {
         res.status(500).end() // Internal Server Error
         throw error
