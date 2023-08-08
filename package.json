@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/benjiyamin/News-Exchange#readme",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "cheerio": "^1.0.0-rc.3",
     "express": "^4.17.3",
     "express-handlebars": "^3.1.0",
